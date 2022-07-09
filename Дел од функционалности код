@@ -13,7 +13,7 @@ private void btPrasalnikPredna_MouseHover(object sender, EventArgs e)
                 pbCardPredna.Visible = false;
             }
         }
-        //? Prikazi slika za cvc
+        // Prikazi slika za cvc
         private void btPrasalnikZadna_MouseHover(object sender, EventArgs e)
         {
             if (pbCardZadna.Visible == false)
