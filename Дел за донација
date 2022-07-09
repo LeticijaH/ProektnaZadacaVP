@@ -1,0 +1,126 @@
+private void btDoniraj_Click(object sender, EventArgs e)
+        {
+            string connetionString = null;
+            SqlConnection con;
+            SqlCommand cmd;
+            string sql;
+
+            //povrzuvanje so bazata
+            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con = new SqlConnection(connetionString);
+            con.Open();
+
+
+            //proverka dali postoi tabelata ako ne postoi se kreira tabela
+            sql = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Donatori')";
+
+            cmd = new SqlCommand(sql, con);
+
+            string connetionString2 = null;
+            SqlConnection con2;
+            SqlCommand cmd2;
+            SqlDataReader dataReader2;
+            string sql2;
+
+            //povrzuvanje so bazata
+            connetionString2 = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con2 = new SqlConnection(connetionString2);
+            con2.Open();
+
+
+            //proverka dali postoi tabelata ako ne postoi se kreira tabela
+            sql2 = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Stacionari')";
+
+            cmd2 = new SqlCommand(sql2, con2);
+
+            //dodavanje podatoci vo tabelata
+            try
+            {
+                string ime, prezime, brCard, stacionar;
+                int cvc,iznos;
+
+                ime = tbImeDonacija.Text;
+                prezime = tbPrezimeDonacija.Text;
+                brCard = tbBrKartDonacija.Text;
+                cvc = Convert.ToInt32(tbCVCDonacija.Text);
+                iznos = Convert.ToInt32(tbIznosDonacija.Text);
+                stacionar = cbStacionar.Text;
+
+                if(ime==""||prezime==""||brCard==""|| tbCVCDonacija.Text == ""||tbIznosDonacija.Text==""||stacionar=="")
+                {
+                    throw new Exception("Има проблем со донацијата! Обидете се повторно :)");
+                }
+                
+                try
+                {
+                    if (brCard.Length != 16 || tbCVCDonacija.Text.Length != 3)
+                    {
+                        throw new Exception("Бојот на картичката мора да биде од 16 цифри, а CVC бројот од 3 цифри!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                    tbBrKartDonacija.Clear();
+                    tbCVCDonacija.Clear();
+                }
+                cmd.CommandText = @"INSERT INTO Donatori (Ime, Prezime, BrojKartica, CVC) VALUES (@ime, @prezime, @brCard, @cvc)";
+
+                cmd.Parameters.AddWithValue("@ime", ime);
+                cmd.Parameters.AddWithValue("@prezime", prezime);
+                cmd.Parameters.AddWithValue("@brCard", brCard);
+                cmd.Parameters.AddWithValue("@cvc", cvc);
+                cmd.ExecuteNonQuery();
+
+                sql2 = "Select Stacionar, ZiroSmetka, VkupenIznos from Stacionari";
+                cmd2 = new SqlCommand(sql2, con2);
+                dataReader2 = cmd2.ExecuteReader();
+
+                bool postoi = false;
+                string stacionarcb = stacionar;
+                int suma = 0;
+                while (dataReader2.Read())
+                {
+                    string[] arr = new string[3];
+
+                    arr[0] = dataReader2.GetValue(0).ToString();
+                    arr[1] = dataReader2.GetValue(1).ToString();
+                    arr[2] = dataReader2.GetValue(2).ToString();
+
+                    if(arr[0].Substring(0,stacionarcb.Length)==stacionarcb)
+                    {
+                        stacionarcb = arr[0];
+                        if (arr[2].Length == 0)
+                            suma = iznos;
+                        else
+                            suma = Convert.ToInt32(arr[2]) + iznos;
+                        postoi = true;
+                        break;
+                    }
+                   
+                }
+                dataReader2.Close();
+                if(postoi==true)
+                {
+                    cmd2.CommandText = @"UPDATE Stacionari Set VkupenIznos = @suma where Stacionar = @stacionarcb";
+                    cmd2.Parameters.AddWithValue("@stacionarcb", stacionarcb);
+                    cmd2.Parameters.AddWithValue("@suma", suma);
+                    cmd2.ExecuteNonQuery();
+                    MessageBox.Show("Ви благодариме за донацијата!");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
+            con.Close();
+            con2.Close();
+            tbImeDonacija.Clear();
+            tbPrezimeDonacija.Clear();
+            tbBrKartDonacija.Clear();
+            tbCVCDonacija.Clear();
+            tbIznosDonacija.Clear();
+            cbStacionar.SelectedIndex = -1;
+        }
