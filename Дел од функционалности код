@@ -1,0 +1,79 @@
+private void btPrasalnikPredna_MouseHover(object sender, EventArgs e)
+        {
+            if (pbCardPredna.Visible == false)
+            {
+                pbCardPredna.Visible = true;
+            }
+        }
+        //? Skrij slika za br.card
+        private void btPrasalnikPredna_MouseLeave(object sender, EventArgs e)
+        {
+            if (pbCardPredna.Visible == true)
+            {
+                pbCardPredna.Visible = false;
+            }
+        }
+        //? Prikazi slika za cvc
+        private void btPrasalnikZadna_MouseHover(object sender, EventArgs e)
+        {
+            if (pbCardZadna.Visible == false)
+            {
+                pbCardZadna.Visible = true;
+            }
+        }
+        //Skrij slika za cvc
+        private void btPrasalnikZadna_MouseLeave(object sender, EventArgs e)
+        {
+            if (pbCardZadna.Visible == true)
+            {
+                pbCardZadna.Visible = false;
+            }
+        }
+        //Na pochetok skrien cvc donacija
+        private void tbCVCDonacija_TextChanged(object sender, EventArgs e)
+        {
+            tbCVCDonacija.PasswordChar = '*';
+        }
+        //Hide cvc
+        private void btHideCVC_Click(object sender, EventArgs e)
+        {
+            if (tbCVCDonacija.PasswordChar == '\0')
+            {
+                btShowCVC.BringToFront();
+                tbCVCDonacija.PasswordChar = '*';
+            }
+        }
+        //Show cvc
+        private void btShowCVC_Click(object sender, EventArgs e)
+        {
+            if (tbCVCDonacija.PasswordChar == '*')
+            {
+                btHideCVC.BringToFront();
+                tbCVCDonacija.PasswordChar = '\0';
+            }
+        }
+        // ? Prikazi objasnuvanje za IDKuce
+        private void btPrasalnikIDKuce_MouseHover(object sender, EventArgs e)
+        {
+            if (labelIDKuce.Visible == false)
+            {
+                labelIDKuce.Visible = true;
+            }
+        }
+        // ? Skrij objasnuvanje za IDKuce
+        private void btPrasalnikIDKuce_MouseLeave(object sender, EventArgs e)
+        {
+            if (labelIDKuce.Visible == true)
+            {
+                labelIDKuce.Visible = false;
+            }
+        }
+        //Dokolku nema profil, se registrira. Se pojavuva panel za registracija
+        private void btAddProfil_Click(object sender, EventArgs e)
+        {
+            labelQuote.Visible = false;
+            pictureBoxPozadina.Visible = false;
+            btAddProfil.Visible = false;
+            labelNemaProfil.Visible = false;
+            panelRegistracija.Visible = true;
+        }
