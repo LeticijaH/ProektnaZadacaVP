@@ -1,0 +1,1319 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+using System.IO;
+
+namespace Проект
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+            this.ActiveControl = tbEmailNajava;
+            tbEmailNajava.Focus();
+            tbOpisObjava.MaxLength = 1000;
+            pbCardPredna.Visible = false; // ? Objasnuvanje za br.card
+            pbCardZadna.Visible = false;  // ? Objasnuvanje za CVC
+            panelRegistracija.Visible = false; // Skrien panel za registracija
+            labelIDKuce.Visible = false;    // ? Objasnuvanje za IDKuce
+            tabControl1.TabPages.Remove(tabPage2);  //Tab1 skrien dodeka ne se najavi korisnikot
+            tabControl1.TabPages.Remove(tabPage3);  //Tab2 skrien dodeka ne se najavi korisnikot
+            labelIzbrisiKuce.Visible = false;
+            //listViewKucinja
+            listViewKucinja.View = View.Details;
+            listViewKucinja.GridLines = true;
+            listViewKucinja.FullRowSelect = true;
+            listViewKucinja.Columns.Add("ИД Број", 70);
+            listViewKucinja.Columns.Add("Име", 100);
+            listViewKucinja.Columns.Add("Пол", 70);
+            listViewKucinja.Columns.Add("Возраст", 150);
+            listViewKucinja.Columns.Add("Раса", 200);
+            //listViewKucinja.Columns.Add("Слика", 100);
+            listViewKucinja.Columns.Add("Email", 0);
+            labelKorisnik.Text = "";
+        }
+        //Show password najava
+        private void buttonShow_Click(object sender, EventArgs e)
+        {
+            if (tbLozinkaNajava.PasswordChar == '*')
+            {
+                buttonHide.BringToFront();
+                tbLozinkaNajava.PasswordChar = '\0';
+            }
+        }
+        //Hide password najava
+        private void buttonHide_Click(object sender, EventArgs e)
+        {
+            if (tbLozinkaNajava.PasswordChar == '\0')
+            {
+                buttonShow.BringToFront();
+                tbLozinkaNajava.PasswordChar = '*';
+            }
+        }
+        //Na pochetok skrien password najava
+        private void tbLozinkaNajava_TextChanged(object sender, EventArgs e)
+        {
+            tbLozinkaNajava.PasswordChar = '*';
+        }
+        //Show password registracija
+        private void buttonShowReg_Click(object sender, EventArgs e)
+        {
+            if (textBoxLozReg.PasswordChar == '*')
+            {
+                buttonHideReg.BringToFront();
+                textBoxLozReg.PasswordChar = '\0';
+            }
+        }
+        //Hide password registracija
+        private void buttonHideReg_Click(object sender, EventArgs e)
+        {
+            if (textBoxLozReg.PasswordChar == '\0')
+            {
+                buttonShowReg.BringToFront();
+                textBoxLozReg.PasswordChar = '*';
+            }
+        }
+        //Na pochetok skrien password registracija
+        private void textBoxLozReg_TextChanged(object sender, EventArgs e)
+        {
+            textBoxLozReg.PasswordChar = '*';
+        }
+        //? Pikazi slika za br.card
+        private void btPrasalnikPredna_MouseHover(object sender, EventArgs e)
+        {
+            if (pbCardPredna.Visible == false)
+            {
+                pbCardPredna.Visible = true;
+            }
+        }
+        //? Skrij slika za br.card
+        private void btPrasalnikPredna_MouseLeave(object sender, EventArgs e)
+        {
+            if (pbCardPredna.Visible == true)
+            {
+                pbCardPredna.Visible = false;
+            }
+        }
+        //? Prikazi slika za cvc
+        private void btPrasalnikZadna_MouseHover(object sender, EventArgs e)
+        {
+            if (pbCardZadna.Visible == false)
+            {
+                pbCardZadna.Visible = true;
+            }
+        }
+        //Skrij slika za cvc
+        private void btPrasalnikZadna_MouseLeave(object sender, EventArgs e)
+        {
+            if (pbCardZadna.Visible == true)
+            {
+                pbCardZadna.Visible = false;
+            }
+        }
+        //Na pochetok skrien cvc donacija
+        private void tbCVCDonacija_TextChanged(object sender, EventArgs e)
+        {
+            tbCVCDonacija.PasswordChar = '*';
+        }
+        //Hide cvc
+        private void btHideCVC_Click(object sender, EventArgs e)
+        {
+            if (tbCVCDonacija.PasswordChar == '\0')
+            {
+                btShowCVC.BringToFront();
+                tbCVCDonacija.PasswordChar = '*';
+            }
+        }
+        //Show cvc
+        private void btShowCVC_Click(object sender, EventArgs e)
+        {
+            if (tbCVCDonacija.PasswordChar == '*')
+            {
+                btHideCVC.BringToFront();
+                tbCVCDonacija.PasswordChar = '\0';
+            }
+        }
+        // ? Prikazi objasnuvanje za IDKuce
+        private void btPrasalnikIDKuce_MouseHover(object sender, EventArgs e)
+        {
+            if (labelIDKuce.Visible == false)
+            {
+                labelIDKuce.Visible = true;
+            }
+        }
+        // ? Skrij objasnuvanje za IDKuce
+        private void btPrasalnikIDKuce_MouseLeave(object sender, EventArgs e)
+        {
+            if (labelIDKuce.Visible == true)
+            {
+                labelIDKuce.Visible = false;
+            }
+        }
+        //Dokolku nema profil, se registrira. Se pojavuva panel za registracija
+        private void btAddProfil_Click(object sender, EventArgs e)
+        {
+            labelQuote.Visible = false;
+            pictureBoxPozadina.Visible = false;
+            btAddProfil.Visible = false;
+            labelNemaProfil.Visible = false;
+            panelRegistracija.Visible = true;
+        }
+
+        //Tab 1 - Doma
+
+        //Kod za najava
+        
+        string emailN;
+        private void btNajavise_Click(object sender, EventArgs e)
+        {
+            string connectionString = null;
+            SqlConnection con;
+            SqlCommand cmd;
+            SqlDataReader dataReader;
+            string sql;
+
+
+            //povrzuvanje so bazata
+            connectionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con = new SqlConnection(connectionString);
+            con.Open();
+
+            sql = @"Select Email, Ime, Prezime, Lozinka, TelBroj, Slika FROM Licnosti";
+
+            cmd = new SqlCommand(sql, con);
+            dataReader = cmd.ExecuteReader();
+            try
+            {
+                string lozinkaN;
+
+                emailN = tbEmailNajava.Text;
+                lozinkaN = tbLozinkaNajava.Text;
+                if(emailN == "" || lozinkaN == "")
+                {
+                    throw new Exception("Има проблем со најавата. Обидете се повторно.");
+                }
+                bool postoi = false;
+                while (dataReader.Read())
+                {
+                    string[] arr = new string[6];
+
+                    arr[0] = dataReader.GetValue(0).ToString();
+                    arr[1] = dataReader.GetValue(1).ToString();
+                    arr[2] = dataReader.GetValue(2).ToString();
+                    arr[3] = dataReader.GetValue(3).ToString();
+                    arr[4] = dataReader.GetValue(4).ToString();
+                    arr[5] = dataReader.GetValue(5).ToString();
+
+                    if (arr[0].Substring(0, emailN.Length) == emailN && arr[3].Substring(0, lozinkaN.Length) == lozinkaN)
+                    {
+                        tabControl1.TabPages.Add(tabPage2);
+                        tabControl1.TabPages.Add(tabPage3);
+                        btAddProfil.Hide();
+                        labelNemaProfil.Hide();
+                        labelKorisnik.Text = emailN;
+                        postoi = true;
+                        break;
+                    }
+
+                }
+                if (postoi == false)
+                {
+                    MessageBox.Show("Внесовте погрешен е-маил или лозинка!");
+                }
+                tbEmailNajava.Clear();
+                tbLozinkaNajava.Clear();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            con.Close();
+            tbEmailNajava.Clear();
+            tbLozinkaNajava.Clear();
+            
+        }
+        //Kod za slikaLicnost
+        string slikaLicnost;
+        private void btPrikaciSlika_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OpenFileDialog dial = new OpenFileDialog();
+                dial.Filter = "jpg files(.*jpg)|*.jpg| PNG files(.*png)|*.png| All Files(*.*)|*.*";
+                if (dial.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    slikaLicnost = dial.FileName;
+                    pbSlikaLicnost.ImageLocation = slikaLicnost;
+                    pbSlikaLicnost.SizeMode = PictureBoxSizeMode.Zoom;
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        //Kod za registracija
+        private void btRegistrirajse_Click(object sender, EventArgs e)
+        {
+            string connetionString = null;
+            SqlConnection con;
+            SqlCommand cmd;
+            string sql;
+
+            //povrzuvanje so bazata
+            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con = new SqlConnection(connetionString);
+            con.Open();
+
+
+            //proverka dali postoi tabelata ako ne postoi se kreira tabela
+            sql = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Licnosti')";
+
+            cmd = new SqlCommand(sql, con);
+
+            //dodavanje podatoci vo tabelata
+            try
+            {
+                string emailR, ime, prezime, lozinkaR, slika;
+                int telbroj;
+
+                emailR = tbEmailReg.Text;
+                ime = tbIme.Text;
+                prezime = tbPrezime.Text;
+                lozinkaR = textBoxLozReg.Text;
+                
+                bool prazniPolinja = false;
+                if(emailR=="" || ime=="" || prezime=="" || lozinkaR=="" || tbTelBrojReg.Text=="")
+                {
+                    throw new Exception("Има проблем со регистрацијата! Обидете се повторно :)");
+                }
+                try
+                {
+                    if (lozinkaR.Length < 8 || lozinkaR.Length > 15)
+                    {
+                        prazniPolinja = true;
+                        throw new Exception("Невалидна лозинка! Лозинката мора да биде од 8 - 15 карактери!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                    textBoxLozReg.Clear();
+                }
+               
+                slika = slikaLicnost;
+                telbroj = Convert.ToInt32(tbTelBrojReg.Text);
+                if (prazniPolinja == false)
+                {
+                    if (slika != null)
+                    {
+
+                        cmd.CommandText = @"INSERT INTO Licnosti (Email, Ime, Prezime, Lozinka, TelBroj, Slika) VALUES (@emailR, @ime, @prezime, @lozinkaR, @telbroj, @slika)";
+
+                        cmd.Parameters.AddWithValue("@emailR", emailR);
+                        cmd.Parameters.AddWithValue("@ime", ime);
+                        cmd.Parameters.AddWithValue("@prezime", prezime);
+                        cmd.Parameters.AddWithValue("@lozinkaR", lozinkaR);
+                        cmd.Parameters.AddWithValue("@telbroj", telbroj);
+                        cmd.Parameters.AddWithValue("@slika", slika);
+                        cmd.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        cmd.CommandText = @"INSERT INTO Licnosti (Email, Ime, Prezime, Lozinka, TelBroj) VALUES (@emailR, @ime, @prezime, @lozinkaR, @telbroj)";
+
+                        cmd.Parameters.AddWithValue("@emailR", emailR);
+                        cmd.Parameters.AddWithValue("@ime", ime);
+                        cmd.Parameters.AddWithValue("@prezime", prezime);
+                        cmd.Parameters.AddWithValue("@lozinkaR", lozinkaR);
+                        cmd.Parameters.AddWithValue("@telbroj", telbroj);
+                        cmd.ExecuteNonQuery();
+                    }
+                    MessageBox.Show("Успешно се регистриравте! За да продолжите понатаму најавете се!");
+                    panelRegistracija.Visible = false;
+                    labelQuote.Show();
+                    pictureBoxPozadina.Visible = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            con.Close();
+            tbEmailReg.Clear();
+            tbIme.Clear();
+            tbPrezime.Clear();
+            textBoxLozReg.Clear();
+            tbTelBrojReg.Clear();
+            pbSlikaLicnost.Image = null;
+        }
+
+        //Odjavi se kod
+        private void btOdjavise_Click(object sender, EventArgs e)
+        {
+            tabControl1.TabPages.Remove(tabPage2);
+            tabControl1.TabPages.Remove(tabPage3);
+            btAddProfil.Show();
+            labelNemaProfil.Show();
+            cbPolObjava.SelectedIndex = -1;
+            cbRasaObjava.SelectedIndex = -1;
+            cbVozrastObjava.SelectedIndex = -1;
+            tbOpisObjava.Clear();
+            tbOpisKuce.Clear();
+            cbVozrastOglas.SelectedIndex = -1;
+            cbRasaOglas.SelectedIndex = -1;
+            cbPolOglas.SelectedIndex = -1;
+            cbVozrastOglas.SelectedIndex = -1;
+            tbIDKuce.Clear();
+            tbImeKuce.Clear();
+            pbSlikaKuce.Visible = false;
+            pbSlikaKuceOglasi.Visible = false;
+            listViewKucinja.Items.Clear();
+            labelKorisnik.Text = "";
+            panelRegistracija.Hide();
+            pictureBoxPozadina.Show();
+            labelQuote.Show();
+        }
+        //Tab 3 - Objavi kuce
+        //Oglasi kuce kod
+        List<int> idkuce;
+        private void btOglasiKuce_Click(object sender, EventArgs e)
+        {
+            idkuce = new List<int>();
+            string connetionString = null;
+            SqlConnection con;
+            SqlCommand cmd;
+            SqlDataReader dataReader;
+            string sql;
+
+            //povrzuvanje so bazata
+            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con = new SqlConnection(connetionString);
+            con.Open();
+
+
+            //proverka dali postoi tabelata ako ne postoi se kreira tabela
+            sql = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Kucinja')";
+
+            cmd = new SqlCommand(sql, con);
+
+            //dodavanje podatoci vo tabelata
+            string ime, pol, vozrast, rasa, opis, emailO;
+            int idKuce;
+
+            ime = tbImeKuce.Text;
+            pol = cbPolObjava.Text;
+            vozrast = cbVozrastObjava.Text;
+            rasa = cbRasaObjava.Text;
+            opis = tbOpisObjava.Text;
+            idKuce = Convert.ToInt32(tbIDKuce.Text);
+            byte[] img = null;
+            FileStream fs = new FileStream(slikaKuce, FileMode.Open, FileAccess.Read);
+            BinaryReader br = new BinaryReader(fs);
+            img = br.ReadBytes((int)fs.Length);
+            
+            emailO = emailN;
+            try
+            {
+                sql = @"Select IDKuce, Ime, Pol, Vozrast, Rasa, Opis, Slika, EmailObjavuvac FROM Kucinja";
+
+                cmd = new SqlCommand(sql, con);
+                dataReader = cmd.ExecuteReader();
+                bool postoi = false;
+                int countRow = 0;
+                while (dataReader.Read())
+                {
+                    countRow++;
+                    string[] arr = new string[8];
+
+                    arr[0] = dataReader.GetValue(0).ToString();
+                    arr[1] = dataReader.GetValue(1).ToString();
+                    arr[2] = dataReader.GetValue(2).ToString();
+                    arr[3] = dataReader.GetValue(3).ToString();
+                    arr[4] = dataReader.GetValue(4).ToString();
+                    arr[5] = dataReader.GetValue(5).ToString();
+                    arr[6] = dataReader.GetValue(6).ToString();
+                    arr[7] = dataReader.GetValue(7).ToString();
+
+                    idkuce.Add(Convert.ToInt32(arr[0]));
+                    if (Convert.ToInt32(arr[0]) == idKuce && countRow > 0)
+                    {
+                        MessageBox.Show("Внесовте веќе постоечки ID број!");
+                        postoi = true;
+                        break;
+                    }
+                    else
+                    {
+                        postoi = false;
+                    }
+
+                }
+                dataReader.Close();
+                if(countRow==0)
+                {
+                    cmd.CommandText = @"INSERT INTO Kucinja (IDKuce, Ime, Pol, Vozrast, Rasa, Opis, Slika, EmailObjavuvac) VALUES (@idKuce, @ime, @pol, @vozrast, @rasa, @opis, @img, @emailO)";
+
+                    cmd.Parameters.AddWithValue("@idKuce", idKuce);
+                    cmd.Parameters.AddWithValue("@ime", ime);
+                    cmd.Parameters.AddWithValue("@pol", pol);
+                    cmd.Parameters.AddWithValue("@vozrast", vozrast);
+                    cmd.Parameters.AddWithValue("@rasa", rasa);
+                    cmd.Parameters.AddWithValue("@opis", opis);
+                    cmd.Parameters.AddWithValue("@img", img);
+                    cmd.Parameters.AddWithValue("@emailO", emailO);
+
+                    cmd.ExecuteNonQuery();
+                    MessageBox.Show("Успешно го објавивте кучето.");
+                }
+                if(postoi==false && countRow > 0)
+                {
+                    cmd.CommandText = @"INSERT INTO Kucinja (IDKuce, Ime, Pol, Vozrast, Rasa, Opis, Slika, EmailObjavuvac) VALUES (@idKuce, @ime, @pol, @vozrast, @rasa, @opis, @img, @emailO)";
+
+                    cmd.Parameters.AddWithValue("@idKuce", idKuce);
+                    cmd.Parameters.AddWithValue("@ime", ime);
+                    cmd.Parameters.AddWithValue("@pol", pol);
+                    cmd.Parameters.AddWithValue("@vozrast", vozrast);
+                    cmd.Parameters.AddWithValue("@rasa", rasa);
+                    cmd.Parameters.AddWithValue("@opis", opis);
+                    cmd.Parameters.AddWithValue("@img", img);
+                    cmd.Parameters.AddWithValue("@emailO", emailO);
+
+                    cmd.ExecuteNonQuery();
+                    MessageBox.Show("Успешно го објавивте кучето.");
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                MessageBox.Show("Има проблем со внесувањето на податоците. Обидете се повторно :)");
+            }
+            con.Close();
+            tbIDKuce.Clear();
+            tbImeKuce.Clear();
+            cbPolObjava.SelectedIndex = -1;
+            cbRasaObjava.SelectedIndex = -1;
+            cbVozrastObjava.SelectedIndex = -1;
+            tbOpisObjava.Clear();
+            pbSlikaKuce.Image = null;
+        }
+
+        //Kod SlikaKuce
+        string slikaKuce;
+        private void btSlikaKuce_Click(object sender, EventArgs e)
+        {
+            pbSlikaKuce.Visible = true;
+            try
+            {
+                OpenFileDialog dial = new OpenFileDialog();
+                dial.Filter = "jpg files(.*jpg)|*.jpg| PNG files(.*png)|*.png| All Files(*.*)|*.*";
+                if (dial.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    slikaKuce = dial.FileName;
+                    pbSlikaKuce.ImageLocation = slikaKuce;
+                    pbSlikaKuce.SizeMode = PictureBoxSizeMode.Zoom;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        //Tab 4 - Donacija
+        //Kod za Donacija
+        private void btDoniraj_Click(object sender, EventArgs e)
+        {
+            string connetionString = null;
+            SqlConnection con;
+            SqlCommand cmd;
+            string sql;
+
+            //povrzuvanje so bazata
+            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con = new SqlConnection(connetionString);
+            con.Open();
+
+
+            //proverka dali postoi tabelata ako ne postoi se kreira tabela
+            sql = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Donatori')";
+
+            cmd = new SqlCommand(sql, con);
+
+            string connetionString2 = null;
+            SqlConnection con2;
+            SqlCommand cmd2;
+            SqlDataReader dataReader2;
+            string sql2;
+
+            //povrzuvanje so bazata
+            connetionString2 = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con2 = new SqlConnection(connetionString2);
+            con2.Open();
+
+
+            //proverka dali postoi tabelata ako ne postoi se kreira tabela
+            sql2 = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Stacionari')";
+
+            cmd2 = new SqlCommand(sql2, con2);
+
+            //dodavanje podatoci vo tabelata
+            try
+            {
+                string ime, prezime, brCard, stacionar;
+                int cvc,iznos;
+
+                ime = tbImeDonacija.Text;
+                prezime = tbPrezimeDonacija.Text;
+                brCard = tbBrKartDonacija.Text;
+                cvc = Convert.ToInt32(tbCVCDonacija.Text);
+                iznos = Convert.ToInt32(tbIznosDonacija.Text);
+                stacionar = cbStacionar.Text;
+
+                if(ime==""||prezime==""||brCard==""|| tbCVCDonacija.Text == ""||tbIznosDonacija.Text==""||stacionar=="")
+                {
+                    throw new Exception("Има проблем со донацијата! Обидете се повторно :)");
+                }
+                
+                try
+                {
+                    if (brCard.Length != 16 || tbCVCDonacija.Text.Length != 3)
+                    {
+                        throw new Exception("Бојот на картичката мора да биде од 16 цифри, а CVC бројот од 3 цифри!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                    tbBrKartDonacija.Clear();
+                    tbCVCDonacija.Clear();
+                }
+                cmd.CommandText = @"INSERT INTO Donatori (Ime, Prezime, BrojKartica, CVC) VALUES (@ime, @prezime, @brCard, @cvc)";
+
+                cmd.Parameters.AddWithValue("@ime", ime);
+                cmd.Parameters.AddWithValue("@prezime", prezime);
+                cmd.Parameters.AddWithValue("@brCard", brCard);
+                cmd.Parameters.AddWithValue("@cvc", cvc);
+                cmd.ExecuteNonQuery();
+
+                sql2 = "Select Stacionar, ZiroSmetka, VkupenIznos from Stacionari";
+                cmd2 = new SqlCommand(sql2, con2);
+                dataReader2 = cmd2.ExecuteReader();
+
+                bool postoi = false;
+                string stacionarcb = stacionar;
+                int suma = 0;
+                while (dataReader2.Read())
+                {
+                    string[] arr = new string[3];
+
+                    arr[0] = dataReader2.GetValue(0).ToString();
+                    arr[1] = dataReader2.GetValue(1).ToString();
+                    arr[2] = dataReader2.GetValue(2).ToString();
+
+                    if(arr[0].Substring(0,stacionarcb.Length)==stacionarcb)
+                    {
+                        stacionarcb = arr[0];
+                        if (arr[2].Length == 0)
+                            suma = iznos;
+                        else
+                            suma = Convert.ToInt32(arr[2]) + iznos;
+                        postoi = true;
+                        break;
+                    }
+                   
+                }
+                dataReader2.Close();
+                if(postoi==true)
+                {
+                    cmd2.CommandText = @"UPDATE Stacionari Set VkupenIznos = @suma where Stacionar = @stacionarcb";
+                    cmd2.Parameters.AddWithValue("@stacionarcb", stacionarcb);
+                    cmd2.Parameters.AddWithValue("@suma", suma);
+                    cmd2.ExecuteNonQuery();
+                    MessageBox.Show("Ви благодариме за донацијата!");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
+            con.Close();
+            con2.Close();
+            tbImeDonacija.Clear();
+            tbPrezimeDonacija.Clear();
+            tbBrKartDonacija.Clear();
+            tbCVCDonacija.Clear();
+            tbIznosDonacija.Clear();
+            cbStacionar.SelectedIndex = -1;
+        }
+        //Tab 2 - Oglasi
+        //Kod za prebaruvanje kuce spored parametri
+        SortedList<int, string> sortirana;
+        SortedList<int, byte[]> sortiranaSlika;
+        private void btPrebarajKuce_Click(object sender, EventArgs e)
+        {
+            string connetionString = null;
+            SqlConnection con;
+            SqlCommand cmd;
+            SqlDataReader dataReader;
+            string sql;
+
+            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con = new SqlConnection(connetionString);
+            con.Open();
+
+            //sql = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Kucinja')";
+            //cmd = new SqlCommand(sql, con);
+
+            sql = "Select IDKuce, Ime, Pol, Vozrast, Rasa, Opis, Slika, EmailObjavuvac from Kucinja";
+            cmd = new SqlCommand(sql, con);
+            dataReader = cmd.ExecuteReader();
+
+            string pk= cbPolOglas.SelectedItem.ToString();
+            string vk= cbVozrastOglas.SelectedItem.ToString();
+            string rk= cbRasaOglas.SelectedItem.ToString();
+            sortirana = new SortedList<int, string>();
+            sortiranaSlika = new SortedList<int, byte[]>();
+            string opis = "";
+            try
+            {
+                if(pk==""||vk==""||rk=="")
+                {
+                    throw new Exception("Полињата за избор не смеат да останат празни!");
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
+            listViewKucinja.Items.Clear();
+            while (dataReader.Read())
+            {
+                string[] arr = new string[7];
+                ListViewItem itm;
+
+                arr[0] = dataReader.GetValue(0).ToString();
+                arr[1] = dataReader.GetValue(1).ToString();
+                arr[2] = dataReader.GetValue(2).ToString();
+                arr[3] = dataReader.GetValue(3).ToString();
+                arr[4] = dataReader.GetValue(4).ToString();
+                arr[5] = dataReader.GetValue(7).ToString();
+                opis = dataReader.GetValue(5).ToString();
+                byte[] img = (byte[])(dataReader[6]);
+
+
+                if (arr[2].Substring(0, pk.Length) == pk && arr[3].Substring(0, vk.Length) == vk && arr[4].Substring(0, rk.Length) == rk)
+                {
+                    
+                    if(!sortirana.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortirana[Convert.ToInt32(arr[0])] = opis;
+                    }
+                    if (!sortiranaSlika.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortiranaSlika[Convert.ToInt32(arr[0])] = img;
+                    }
+                    itm = new ListViewItem(arr);
+                    listViewKucinja.Items.Add(itm);
+                }
+                else if(pk=="Сите" && arr[3].Substring(0, vk.Length) == vk && arr[4].Substring(0, rk.Length) == rk)
+                {
+                    
+                    if (!sortirana.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortirana[Convert.ToInt32(arr[0])] = opis;
+                    }
+                    if (!sortiranaSlika.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortiranaSlika[Convert.ToInt32(arr[0])] = img;
+                    }
+                    itm = new ListViewItem(arr);
+                    listViewKucinja.Items.Add(itm);
+                }
+                else if(vk=="Сите" && arr[2].Substring(0, pk.Length) == pk && arr[4].Substring(0, rk.Length) == rk)
+                {
+                   
+                    if (!sortirana.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortirana[Convert.ToInt32(arr[0])] = opis;
+                    }
+                    if (!sortiranaSlika.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortiranaSlika[Convert.ToInt32(arr[0])] = img;
+                    }
+                    itm = new ListViewItem(arr);
+                    listViewKucinja.Items.Add(itm);
+                }
+                else if(rk== "Сите" && arr[2].Substring(0, pk.Length) == pk && arr[3].Substring(0, vk.Length) == vk)
+                {
+                    
+                    if (!sortirana.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortirana[Convert.ToInt32(arr[0])] = opis;
+                    }
+                    if (!sortiranaSlika.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortiranaSlika[Convert.ToInt32(arr[0])] = img;
+                    }
+                    itm = new ListViewItem(arr);
+                    listViewKucinja.Items.Add(itm);
+                }
+                else if(rk == "Сите" && vk == "Сите" && arr[2].Substring(0, pk.Length) == pk)
+                {   
+                    if (!sortirana.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortirana[Convert.ToInt32(arr[0])] = opis;
+                    }
+                    if (!sortiranaSlika.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortiranaSlika[Convert.ToInt32(arr[0])] = img;
+                    }
+                    itm = new ListViewItem(arr);
+                    listViewKucinja.Items.Add(itm);
+                }
+                else if(rk == "Сите" && pk == "Сите" && arr[3].Substring(0, vk.Length) == vk)
+                {
+                    if (!sortirana.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortirana[Convert.ToInt32(arr[0])] = opis;
+                    }
+                    if (!sortiranaSlika.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortiranaSlika[Convert.ToInt32(arr[0])] = img;
+                    }
+                    itm = new ListViewItem(arr);
+                    listViewKucinja.Items.Add(itm);
+                }
+                else if (pk == "Сите" && vk == "Сите" && arr[4].Substring(0, rk.Length) == rk)
+                {
+                    if (!sortirana.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortirana[Convert.ToInt32(arr[0])] = opis;
+                    }
+                    if (!sortiranaSlika.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortiranaSlika[Convert.ToInt32(arr[0])] = img;
+                    }
+                    itm = new ListViewItem(arr);
+                    listViewKucinja.Items.Add(itm);
+                }
+                else if(pk == "Сите" && vk == "Сите" && rk == "Сите")
+                {
+                    if (!sortirana.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortirana[Convert.ToInt32(arr[0])] = opis;
+                    }
+                    if (!sortiranaSlika.ContainsKey(Convert.ToInt32(arr[0])))
+                    {
+                        sortiranaSlika[Convert.ToInt32(arr[0])] = img;
+                    }
+                    itm = new ListViewItem(arr);
+                    listViewKucinja.Items.Add(itm);
+                }
+            }
+            
+            con.Close();
+        }
+        //Kod za brishenje selekcija
+        private void btIzbrishiIzbor_Click(object sender, EventArgs e)
+        {
+            cbPolOglas.SelectedIndex = -1;
+            cbVozrastOglas.SelectedIndex = -1;
+            cbRasaOglas.SelectedIndex = -1;
+            listViewKucinja.Items.Clear();
+            tbOpisKuce.Clear();
+            pbSlikaKuceOglasi.Visible = false;
+        }
+        //Kod za prikazuvanje opis na kuce
+        string eMail;
+        private void listViewKucinja_MouseClick(object sender, MouseEventArgs e)
+        {
+            for (int i = 0; i < listViewKucinja.Items.Count; i++)
+            {
+                if (listViewKucinja.Items[i].Selected == true)
+                {
+                    for (int j = 0; j < sortirana.Count; j++)
+                    {
+                        if (listViewKucinja.Items[i].SubItems[0].Text == sortirana.Keys[j].ToString())
+                        {
+                            tbOpisKuce.Text = sortirana.Values[j];
+                            break;
+                        }
+                    }
+                    for (int k = 0; k < sortiranaSlika.Count; k++)
+                    {
+                        if (listViewKucinja.Items[i].SubItems[0].Text == sortiranaSlika.Keys[k].ToString())
+                        {
+                            byte[] img = (byte[])(sortiranaSlika.Values[k]);
+
+                            if (img == null)
+                            {
+                                pbSlikaKuceOglasi.Image = null;
+                            }
+                            else
+                            {
+                                MemoryStream ms = new MemoryStream(img);
+                                pbSlikaKuceOglasi.Image = Image.FromStream(ms);
+                            }
+                            break;
+                        }
+                    }
+                    eMail = listViewKucinja.Items[i].SubItems[5].Text;
+                }
+            }
+            pbSlikaKuceOglasi.Visible = true;
+        }
+
+        private void btVdomi_Click(object sender, EventArgs e)
+        {
+            string connetionString = null;
+            SqlConnection con;
+            SqlCommand cmd;
+            SqlDataReader dataReader;
+            string sql;
+
+            //povrzuvanje so bazata
+            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con = new SqlConnection(connetionString);
+            con.Open();
+
+
+            //proverka dali postoi tabelata ako ne postoi se kreira tabela
+            sql = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Licnosti')";
+
+            cmd = new SqlCommand(sql, con);
+
+            sql = @"Select Email, Ime, Prezime, Lozinka, TelBroj, Slika FROM Licnosti";
+            cmd = new SqlCommand(sql, con);
+            dataReader = cmd.ExecuteReader();
+
+            string emailV = eMail;
+            while (dataReader.Read())
+            {
+                string[] arr = new string[6];
+
+                arr[0] = dataReader.GetValue(0).ToString();
+                arr[1] = dataReader.GetValue(1).ToString();
+                arr[2] = dataReader.GetValue(2).ToString();
+                arr[3] = dataReader.GetValue(3).ToString();
+                arr[4] = dataReader.GetValue(4).ToString();
+                arr[5] = dataReader.GetValue(5).ToString();
+
+                if(arr[0].Substring(0,emailV.Length) == emailV)
+                {
+                    MessageBox.Show("За да го вдомите кучето, контактирајте ја личноста : \n" + "Емаил: " + arr[0] + "\n" + "Име: " + arr[1] + "\n" + "Презиме: " + arr[2] + "\n" + "Тел.број: " +  arr[4]);
+                    break;
+                }
+            }
+        }
+
+        private void tbOpisObjava_TextChanged(object sender, EventArgs e)
+        {
+            brchar.Text = tbOpisObjava.Text.Length.ToString();
+        }
+
+        private void tbIDKuce_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbIDKuce.Text.Length > 4)
+            {
+                errorProviderIDKuce.SetError(tbIDKuce, "ID бројот може да има 1 - 4 цифри!");
+            }
+            else
+            {
+                errorProviderIDKuce.SetError(tbIDKuce, null);
+            }
+            string connetionString = null;
+            SqlConnection con;
+            SqlCommand cmd;
+            SqlDataReader dataReader;
+            string sql;
+
+            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con = new SqlConnection(connetionString);
+            con.Open();
+
+            sql = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Kucinja')";
+            cmd = new SqlCommand(sql, con);
+
+            sql = "Select IDKuce, Ime, Pol, Vozrast, Rasa, Opis, Slika, EmailObjavuvac from Kucinja";
+            cmd = new SqlCommand(sql, con);
+            dataReader = cmd.ExecuteReader();
+
+            List<int> idkuce = new List<int>();
+            while (dataReader.Read())
+            {
+                string[] arr = new string[7];
+                
+                arr[0] = dataReader.GetValue(0).ToString();
+                arr[1] = dataReader.GetValue(1).ToString();
+                arr[2] = dataReader.GetValue(2).ToString();
+                arr[3] = dataReader.GetValue(3).ToString();
+                arr[4] = dataReader.GetValue(4).ToString();
+                arr[5] = dataReader.GetValue(6).ToString();
+                arr[6] = dataReader.GetValue(7).ToString();
+
+                idkuce.Add(Convert.ToInt32(arr[0]));
+            }
+            con.Close();
+            bool postoi = false;
+            bool prazno = false;
+            for(int i=0;i<idkuce.Count;i++)
+            {
+                if (tbIDKuce.Text != "")
+                {
+                    if (idkuce[i] == Convert.ToInt32(tbIDKuce.Text))
+                    {
+                        postoi = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    prazno = true;
+                }
+            }
+            if(postoi==true)
+            {
+                errorProviderPostoiID.SetError(tbIDKuce, "ID бројот веќе постои!");
+            }
+            else if(postoi==false && prazno==false)
+            {
+                errorProviderPostoiID.SetError(tbIDKuce, null);
+            }
+            else if(prazno==true)
+            {
+                errorProviderIDPrzano.SetError(tbIDKuce, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderIDPrzano.SetError(tbIDKuce, null);
+            }
+        }
+
+        private void tbIme_Validating(object sender, CancelEventArgs e)
+        {
+            if(tbIme.Text=="")
+            {
+                errorProviderImeR.SetError(tbIme, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderImeR.SetError(tbIme, null);
+            }
+        }
+
+        private void tbPrezime_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbPrezime.Text == "")
+            {
+               errorProviderPrezR.SetError(tbPrezime, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderPrezR.SetError(tbPrezime, null);
+            }
+        }
+
+        private void tbEmailReg_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbEmailReg.Text == "")
+            {
+                errorProviderEmailR.SetError(tbEmailReg, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderEmailR.SetError(tbEmailReg, null);
+            }
+        }
+
+        private void textBoxLozReg_Validating(object sender, CancelEventArgs e)
+        {
+            if (textBoxLozReg.Text.Length < 8 || textBoxLozReg.Text.Length > 15)
+            {
+                errorProviderLozinkaR.SetError(textBoxLozReg, "Невалидна лозинка! Лозинката мора да биде од 8 - 15 карактери!");
+            }
+            else
+            {
+                errorProviderLozinkaR.SetError(textBoxLozReg, null);
+            }
+        }
+
+        private void tbTelBrojReg_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbTelBrojReg.Text == "")
+            {
+                errorProviderTelR.SetError(tbTelBrojReg, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderTelR.SetError(tbTelBrojReg, null);
+            }
+        }
+
+        private void tbImeDonacija_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbImeDonacija.Text == "")
+            {
+                errorProviderImeD.SetError(tbImeDonacija, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderImeD.SetError(tbImeDonacija, null);
+            }
+        }
+
+        private void tbPrezimeDonacija_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbPrezimeDonacija.Text == "")
+            {
+                errorProviderPrezD.SetError(tbPrezimeDonacija, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderPrezD.SetError(tbPrezimeDonacija, null);
+            }
+        }
+
+        private void tbBrKartDonacija_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbBrKartDonacija.Text.Length != 16)
+            {
+                errorProviderBrCard.SetError(tbBrKartDonacija,"Бојот на картичката мора да биде од 16 цифри!");
+            }
+            else
+            {
+                errorProviderBrCard.SetError(tbBrKartDonacija, null);
+            }
+        }
+
+        private void tbCVCDonacija_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbCVCDonacija.Text.Length != 3)
+            {
+                errorProviderCVC.SetError(tbCVCDonacija, "CVC бројот мора да биде од 3 цифри!");
+            }
+            else
+            {
+                errorProviderCVC.SetError(tbCVCDonacija, null);
+            }
+        }
+
+        private void tbIznosDonacija_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbIznosDonacija.Text == "")
+            {
+                errorProviderIznos.SetError(tbIznosDonacija, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderIznos.SetError(tbIznosDonacija, null);
+            }
+        }
+
+        private void cbStacionar_Validating(object sender, CancelEventArgs e)
+        {
+            if (cbStacionar.Text == "")
+            {
+                errorProviderStac.SetError(cbStacionar, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderStac.SetError(cbStacionar, null);
+            }
+        }
+
+        private void tbImeKuce_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbImeKuce.Text == "")
+            {
+                errorProviderImeK.SetError(tbImeKuce, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderImeK.SetError(tbImeKuce, null);
+            }
+        }
+
+        private void cbPolObjava_Validating(object sender, CancelEventArgs e)
+        {
+            if (cbPolObjava.Text == "")
+            {
+                errorProviderPolK.SetError(cbPolObjava, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderPolK.SetError(cbPolObjava, null);
+            }
+        }
+
+        private void cbVozrastObjava_Validating(object sender, CancelEventArgs e)
+        {
+            if (cbVozrastObjava.Text == "")
+            {
+                errorProviderVozK.SetError(cbVozrastObjava, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderVozK.SetError(cbVozrastObjava, null);
+            }
+        }
+
+        private void cbRasaObjava_Validating(object sender, CancelEventArgs e)
+        {
+            if (cbRasaObjava.Text == "")
+            {
+                errorProviderRasaK.SetError(cbRasaObjava, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderRasaK.SetError(cbRasaObjava, null);
+            }
+        }
+
+        private void tbOpisObjava_Validating(object sender, CancelEventArgs e)
+        {
+            if (tbOpisObjava.Text == "")
+            {
+                errorProviderOpisK.SetError(tbOpisObjava, "Полето е задолжително!");
+            }
+            else
+            {
+                errorProviderOpisK.SetError(tbOpisObjava, null);
+            }
+        }
+
+        private void cbPolOglas_Validating(object sender, CancelEventArgs e)
+        {
+            if(cbPolOglas.Text=="")
+            {
+                errorProviderPol.SetError(cbPolOglas, "Изберете една од понудените можности!");
+            }
+            else
+            {
+                errorProviderPol.SetError(cbPolOglas, null);
+            }
+        }
+
+        private void cbVozrastOglas_Validating(object sender, CancelEventArgs e)
+        {
+            if (cbVozrastOglas.Text == "")
+            {
+                errorProviderVoz.SetError(cbVozrastOglas, "Изберете една од понудените можности!");
+            }
+            else
+            {
+                errorProviderVoz.SetError(cbVozrastOglas, null);
+            }
+           
+        }
+
+        private void cbRasaOglas_Validating(object sender, CancelEventArgs e)
+        {
+            if (cbRasaOglas.Text == "")
+            {
+                errorProviderRasa.SetError(cbRasaOglas, "Изберете една од понудените можности!");
+            }
+            else
+            {
+                errorProviderRasa.SetError(cbRasaOglas, null);
+            }
+        }
+
+        private void btIzbrisiKuce_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (listViewKucinja.Items.Count > 0)
+                {
+                    string mailList = "";
+                    int idKuce = 0;
+                    for (int i = 0; i < listViewKucinja.Items.Count; i++)
+                    {
+                        if (listViewKucinja.Items[i].Selected == true)
+                        {
+                            mailList = listViewKucinja.Items[i].SubItems[5].Text;
+                            idKuce = Convert.ToInt32(listViewKucinja.Items[i].SubItems[0].Text);
+                            if (emailN == mailList.Substring(0, emailN.Length))
+                            {
+                                string connetionString = null;
+                                SqlConnection con;
+                                SqlCommand cmd;
+                                //povrzuvanje so bazata
+                                connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+                                con = new SqlConnection(connetionString);
+                                con.Open();
+
+                                cmd = new SqlCommand("DELETE FROM Kucinja WHERE EmailObjavuvac = @mailList and IDKuce = @idKuce", con);
+                                cmd.Parameters.AddWithValue("@mailList", mailList);
+                                cmd.Parameters.AddWithValue("@idKuce", idKuce);
+                                cmd.ExecuteNonQuery();
+
+                                con.Close();
+                                listViewKucinja.Items[i].Remove();
+                                MessageBox.Show("Го отстранивте огласот!");
+                                cbPolOglas.SelectedIndex = -1;
+                                cbRasaOglas.SelectedIndex = -1;
+                                cbVozrastOglas.SelectedIndex = -1;
+                                tbOpisKuce.Clear();
+                                pbSlikaKuceOglasi.Visible = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Проблем со бришењето!");
+            }
+        }
+
+        private void btPrasalnikIzbr_MouseHover(object sender, EventArgs e)
+        {
+            if (labelIzbrisiKuce.Visible == false)
+            {
+                labelIzbrisiKuce.Visible = true;
+            }
+        }
+
+        private void btPrasalnikIzbr_MouseLeave(object sender, EventArgs e)
+        {
+            if (labelIzbrisiKuce.Visible == true)
+            {
+                labelIzbrisiKuce.Visible = false;
+            }
+        }
+        //slideShow
+        private int imageNum = 1;
+        private void LoadImage()
+        {
+            if(imageNum==7)
+            {
+                imageNum = 1;
+            }
+            pictureBoxPozadina.ImageLocation = string.Format(@"C:\Users\Leticija\Desktop\ProektPics\slideShow\{0}.jpg", imageNum);
+            imageNum++;
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            LoadImage();
+        }
+
+    }//leticija_leticija@yahoo.com
+    //Pernica123
+    //viktorija.nasevska@yahoo.com  
+    //123456789
+}
