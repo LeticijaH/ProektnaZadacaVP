@@ -1312,8 +1312,5 @@ namespace Проект
             LoadImage();
         }
 
-    }//leticija_leticija@yahoo.com
-    //Pernica123
-    //viktorija.nasevska@yahoo.com  
-    //123456789
+    }
 }
