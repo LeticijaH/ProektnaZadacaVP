@@ -1,0 +1,119 @@
+ private void btOglasiKuce_Click(object sender, EventArgs e)
+        {
+            idkuce = new List<int>();
+            string connetionString = null;
+            SqlConnection con;
+            SqlCommand cmd;
+            SqlDataReader dataReader;
+            string sql;
+
+            //povrzuvanje so bazata
+            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            con = new SqlConnection(connetionString);
+            con.Open();
+
+
+            //proverka dali postoi tabelata ako ne postoi se kreira tabela
+            sql = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Kucinja')";
+
+            cmd = new SqlCommand(sql, con);
+
+            //dodavanje podatoci vo tabelata
+            string ime, pol, vozrast, rasa, opis, emailO;
+            int idKuce;
+
+            ime = tbImeKuce.Text;
+            pol = cbPolObjava.Text;
+            vozrast = cbVozrastObjava.Text;
+            rasa = cbRasaObjava.Text;
+            opis = tbOpisObjava.Text;
+            idKuce = Convert.ToInt32(tbIDKuce.Text);
+            byte[] img = null;
+            FileStream fs = new FileStream(slikaKuce, FileMode.Open, FileAccess.Read);
+            BinaryReader br = new BinaryReader(fs);
+            img = br.ReadBytes((int)fs.Length);
+            
+            emailO = emailN;
+            try
+            {
+                sql = @"Select IDKuce, Ime, Pol, Vozrast, Rasa, Opis, Slika, EmailObjavuvac FROM Kucinja";
+
+                cmd = new SqlCommand(sql, con);
+                dataReader = cmd.ExecuteReader();
+                bool postoi = false;
+                int countRow = 0;
+                while (dataReader.Read())
+                {
+                    countRow++;
+                    string[] arr = new string[8];
+
+                    arr[0] = dataReader.GetValue(0).ToString();
+                    arr[1] = dataReader.GetValue(1).ToString();
+                    arr[2] = dataReader.GetValue(2).ToString();
+                    arr[3] = dataReader.GetValue(3).ToString();
+                    arr[4] = dataReader.GetValue(4).ToString();
+                    arr[5] = dataReader.GetValue(5).ToString();
+                    arr[6] = dataReader.GetValue(6).ToString();
+                    arr[7] = dataReader.GetValue(7).ToString();
+
+                    idkuce.Add(Convert.ToInt32(arr[0]));
+                    if (Convert.ToInt32(arr[0]) == idKuce && countRow > 0)
+                    {
+                        MessageBox.Show("Внесовте веќе постоечки ID број!");
+                        postoi = true;
+                        break;
+                    }
+                    else
+                    {
+                        postoi = false;
+                    }
+
+                }
+                dataReader.Close();
+                if(countRow==0)
+                {
+                    cmd.CommandText = @"INSERT INTO Kucinja (IDKuce, Ime, Pol, Vozrast, Rasa, Opis, Slika, EmailObjavuvac) VALUES (@idKuce, @ime, @pol, @vozrast, @rasa, @opis, @img, @emailO)";
+
+                    cmd.Parameters.AddWithValue("@idKuce", idKuce);
+                    cmd.Parameters.AddWithValue("@ime", ime);
+                    cmd.Parameters.AddWithValue("@pol", pol);
+                    cmd.Parameters.AddWithValue("@vozrast", vozrast);
+                    cmd.Parameters.AddWithValue("@rasa", rasa);
+                    cmd.Parameters.AddWithValue("@opis", opis);
+                    cmd.Parameters.AddWithValue("@img", img);
+                    cmd.Parameters.AddWithValue("@emailO", emailO);
+
+                    cmd.ExecuteNonQuery();
+                    MessageBox.Show("Успешно го објавивте кучето.");
+                }
+                if(postoi==false && countRow > 0)
+                {
+                    cmd.CommandText = @"INSERT INTO Kucinja (IDKuce, Ime, Pol, Vozrast, Rasa, Opis, Slika, EmailObjavuvac) VALUES (@idKuce, @ime, @pol, @vozrast, @rasa, @opis, @img, @emailO)";
+
+                    cmd.Parameters.AddWithValue("@idKuce", idKuce);
+                    cmd.Parameters.AddWithValue("@ime", ime);
+                    cmd.Parameters.AddWithValue("@pol", pol);
+                    cmd.Parameters.AddWithValue("@vozrast", vozrast);
+                    cmd.Parameters.AddWithValue("@rasa", rasa);
+                    cmd.Parameters.AddWithValue("@opis", opis);
+                    cmd.Parameters.AddWithValue("@img", img);
+                    cmd.Parameters.AddWithValue("@emailO", emailO);
+
+                    cmd.ExecuteNonQuery();
+                    MessageBox.Show("Успешно го објавивте кучето.");
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                MessageBox.Show("Има проблем со внесувањето на податоците. Обидете се повторно :)");
+            }
+            con.Close();
+            tbIDKuce.Clear();
+            tbImeKuce.Clear();
+            cbPolObjava.SelectedIndex = -1;
+            cbRasaObjava.SelectedIndex = -1;
+            cbVozrastObjava.SelectedIndex = -1;
+            tbOpisObjava.Clear();
+            pbSlikaKuce.Image = null;
+        }
