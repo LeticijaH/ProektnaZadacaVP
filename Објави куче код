@@ -7,13 +7,13 @@
             SqlDataReader dataReader;
             string sql;
 
-            //povrzuvanje so bazata
+            // Povrzuvanje so bazata
             connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
             con = new SqlConnection(connetionString);
             con.Open();
 
 
-            //proverka dali postoi tabelata ako ne postoi se kreira tabela
+            // Proverka dali postoi tabelata ako ne postoi se kreira tabela
             sql = "SELECT count(*) as IsExists FROM dbo.sysobjects where id = object_id('Kucinja')";
 
             cmd = new SqlCommand(sql, con);
