@@ -182,7 +182,7 @@ namespace Проект
 
 
             //povrzuvanje so bazata
-            connectionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            connectionString = "Server=localhost\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
             con = new SqlConnection(connectionString);
             con.Open();
 
@@ -271,7 +271,7 @@ namespace Проект
             string sql;
 
             //povrzuvanje so bazata
-            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            connetionString = "Server=localhost\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
             con = new SqlConnection(connetionString);
             con.Open();
 
@@ -397,7 +397,7 @@ namespace Проект
             string sql;
 
             //povrzuvanje so bazata
-            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            connetionString = "Server=localhost\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
             con = new SqlConnection(connetionString);
             con.Open();
 
@@ -539,7 +539,7 @@ namespace Проект
             string sql;
 
             //povrzuvanje so bazata
-            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            connetionString = "Server=localhost\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
             con = new SqlConnection(connetionString);
             con.Open();
 
@@ -556,7 +556,7 @@ namespace Проект
             string sql2;
 
             //povrzuvanje so bazata
-            connetionString2 = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            connetionString2 = "Server=localhost\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
             con2 = new SqlConnection(connetionString2);
             con2.Open();
 
@@ -669,7 +669,7 @@ namespace Проект
             SqlDataReader dataReader;
             string sql;
 
-            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            connetionString = "Server=localhost\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
             con = new SqlConnection(connetionString);
             con.Open();
 
@@ -885,7 +885,7 @@ namespace Проект
             string sql;
 
             //povrzuvanje so bazata
-            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            connetionString = "Server=localhost\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
             con = new SqlConnection(connetionString);
             con.Open();
 
@@ -940,7 +940,7 @@ namespace Проект
             SqlDataReader dataReader;
             string sql;
 
-            connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+            connetionString = "Server=localhost\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
             con = new SqlConnection(connetionString);
             con.Open();
 
@@ -1251,7 +1251,7 @@ namespace Проект
                                 SqlConnection con;
                                 SqlCommand cmd;
                                 //povrzuvanje so bazata
-                                connetionString = "Server=DESKTOP-UGUAM6V\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
+                                connetionString = "Server=localhost\\SQLExpress; Database= ProektMikrosam; Integrated Security=True;";
                                 con = new SqlConnection(connetionString);
                                 con.Open();
 
